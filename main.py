@@ -1,15 +1,21 @@
-"""MiniAgent 程序入口。"""
+"""MiniAgent 主程序入口"""
+import os
+from core.agent import MiniAgent
+from dotenv import load_dotenv
+from core.llm import MiniLLM
+from pathlib import Path
 
-from core.logger import logger
+# load_dotenv()
 
+# llm = MiniLLM(
+#     model=os.getenv("DS_MODEL", "deepseek-v4-flash"),
+#     api_key=os.getenv("DS_API_KEY", ""),
+#     base_url=os.getenv("DS_BASE_URL", "https://api.deepseek.com")
+# )
+# agent = MiniAgent(
+#     llm=llm,
+#     prompt=None
+# )
 
-def main() -> None:
-    logger.info("MiniAgent 启动")
-    # 业务逻辑...
-    logger.debug("debug 级别日志(需要 LOG_LEVEL=DEBUG 才显示)")
-    logger.warning("警告示例")
-    logger.success("初始化完成")
-
-
-if __name__ == "__main__":
-    main()
+# agent.chat("你好,请帮我查一下现在的时间")
+# print(Path('.'))

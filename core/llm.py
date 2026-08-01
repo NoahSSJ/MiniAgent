@@ -2,6 +2,8 @@ from openai import OpenAI
 from pprint import pprint
 import logging
 from .logger import logger
+from .session import Message
+from typing import Union
 
 class MiniLLM():
     def __init__(self, model: str, api_key: str, base_url: str, **kwargs) -> None:
@@ -18,7 +20,7 @@ class MiniLLM():
         self.max_context_tokens = kwargs.get("max_context_tokens")
         self.temperture = kwargs.get("temperture")
 
-    def chat(self, messages: list[dict], tools_schema: dict, stream: bool = False) -> str:
+    def chat(self, messages: list[dict] = [], tools_schema: list = [], stream: bool = False):
         kwargs = {
             "model": self.model,
             "messages": messages,
@@ -28,9 +30,9 @@ class MiniLLM():
             kwargs["tools"] = tools_schema
         response = self.client.chat.completions.create(**kwargs)
         if stream:
-            return ''
+            pass
         else:
-            msg = response.content
+            msg = response.choices[0].message
             logger.debug(msg)
             return msg
         
