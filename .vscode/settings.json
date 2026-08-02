@@ -1,7 +1,0 @@
-{
-  "python.defaultInterpreterPath": "C:\\Users\\13973\\anaconda3\\envs\\py314\\python.exe",
-  "python.analysis.extraPaths": [
-    "C:\\Users\\13973\\anaconda3\\envs\\py314\\Lib\\site-packages"
-  ],
-  "python.analysis.typeCheckingMode": "basic"
-}
