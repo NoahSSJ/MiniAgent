@@ -1,13 +1,13 @@
 .env
 
-__pycache__
+__pycache__/
 
-.pytest_cache
+.pytest_cache/
 
-.session
+.session/
 
-.vscode
+.vscode/
 
-logs
+logs/
 
 *.log
