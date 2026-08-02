@@ -17,5 +17,5 @@ agent = MiniAgent(
     prompt=None
 )
 
-agent.chat("你好,现在是几点.")
+agent.chat("你好,总结一下路径为:D:\pico-main\pico的这个pico项目的基线对比部分", one_shot_flag=False)
 # print(Path('.'))

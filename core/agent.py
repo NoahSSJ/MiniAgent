@@ -89,7 +89,6 @@ class MiniAgent():
             if not response.tool_calls: # type: ignore
                 logger.debug(response.content) # type: ignore
                 if not one_shot_flag:
-                    # 新版: 原 session.save() 已迁移到 SessionManager.save()
                     self.session_manager.save(self.session.session_id)
                 return response.content
             else:
