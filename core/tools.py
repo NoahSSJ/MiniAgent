@@ -75,6 +75,7 @@ class ReadFileTool(BaseTool):
         },
         "required": ["file_path"]
     }
+    is_risk = False
 
     def validate_args(self, **kwargs):
         logger.debug(f" >>> validate ReadFileTool args")
@@ -114,6 +115,35 @@ class ReadFileTool(BaseTool):
         print("\n".join(result))
         return "\n".join(result)
         
+class DelegateTaskTool(BaseTool):
+    """委派调查工具: 把子任务交给只读子agent, 执行逻辑由handler回调注入"""
+    name = "delegate_task"
+    description = (
+        "当任务需要先做调查（如阅读多个文件、梳理代码结构、评估影响）时，"
+        "把该子任务委派给一个只读子agent去调查，返回纯文本调查结果。"
+        "在动手修改或下结论之前，信息不足优先调用本工具。"
+    )
+    parameters = {
+        "type": "object",
+        "properties": {
+            "task": {"type": "string", "description": "需要交给子agent调查的任务描述"}
+        },
+        "required": ["task"]
+    }
+    is_risk = False
+
+    def __init__(self, context=None, handler=None):
+        super().__init__(context)
+        self.handler = handler          # handler(task: str) -> str
+
+    def validate_args(self, **kwargs):
+        if not kwargs.get("task"):
+            raise ValueError("task 参数必填")
+
+    def execute(self, task: str, **kwargs):
+        if self.handler is None:
+            return "Error: delegate_task 未配置处理函数"
+        return self.handler(task)
 
 
 @dataclass(frozen=True)

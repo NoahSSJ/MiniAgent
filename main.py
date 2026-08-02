@@ -5,17 +5,17 @@ from dotenv import load_dotenv
 from core.llm import MiniLLM
 from pathlib import Path
 
-# load_dotenv()
+load_dotenv()
 
-# llm = MiniLLM(
-#     model=os.getenv("DS_MODEL", "deepseek-v4-flash"),
-#     api_key=os.getenv("DS_API_KEY", ""),
-#     base_url=os.getenv("DS_BASE_URL", "https://api.deepseek.com")
-# )
-# agent = MiniAgent(
-#     llm=llm,
-#     prompt=None
-# )
+llm = MiniLLM(
+    model=os.getenv("DS_MODEL", "deepseek-v4-flash"),
+    api_key=os.getenv("DS_API_KEY", ""),
+    base_url=os.getenv("DS_BASE_URL", "https://api.deepseek.com")
+)
+agent = MiniAgent(
+    llm=llm,
+    prompt=None
+)
 
-# agent.chat("你好,请帮我查一下现在的时间")
+agent.chat("你好,现在是几点.")
 # print(Path('.'))
