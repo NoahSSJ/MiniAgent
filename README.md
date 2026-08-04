@@ -1,12 +1,10 @@
-# MiniAgent V2
+# MiniAgent
 
 从零开发的轻量级多模型路由 Agent。
 
-> v1 完整保留在 master 分支。
-
 ## 项目简介
 
-MiniAgent V2 是一个基于 **Ollama 本地模型 + DeepSeek 云端模型** 的轻量级 Agent 框架，核心设计：
+MiniAgent 是一个基于 **Ollama 本地模型 + DeepSeek 云端模型** 的轻量级 Agent 框架，核心设计：
 
 - **模型路由**：用 `qwen2.5:0.5b` 做输入分类，按任务类型将请求路由到不同规格的模型（1.5b / 7b / DeepSeek API），在速度与质量之间取得平衡。
 - **Agent 闭环**：主 Agent（7b）支持 Function Calling（工具调用），可读取/列出工作区文件。
