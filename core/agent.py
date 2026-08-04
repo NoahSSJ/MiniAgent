@@ -4,6 +4,7 @@ from .logger import logger
 from .tools import ToolManager, DelegateTaskTool, ToolExecutionResult
 from .prompt import PromptManager
 from .context_v2 import ContextManager
+from .workspace import WorkspaceContext
 import json
 
 class MiniAgent():
@@ -17,10 +18,12 @@ class MiniAgent():
     ) -> None:
         self.llm = llm
         self.session_manager = SessionManager()                       # 每个agent独立Session, 天然隔离
+        self.ws = WorkspaceContext(root=r"D:\pico-main\pico").root_path
         self.session = self.session_manager.build()
+        # self.session = self.session_manager.load('e6593330-2da5-4807-97b3-96df4f0a0697')
         self.max_steps = max_steps
         self.read_only = read_only
-        self.tool_manager = ToolManager(self.session)
+        self.tool_manager = ToolManager(self.session, self.ws)
         # 只有非只读agent才拥有委派工具 → 子agent没有委派工具, 不会递归
         if not read_only:
             self.tool_manager.register(
@@ -29,7 +32,7 @@ class MiniAgent():
                     handler=self._delegate,
                 )
             )
-        self.prompt_manager = PromptManager(self.llm.model, self.tool_manager.tools)
+        self.prompt_manager = PromptManager(self.llm.model, self.tool_manager.tools, self.ws)
         self.context_manager = ContextManager(self.session, self.prompt_manager)
         self._system_prompt_ready = False
 

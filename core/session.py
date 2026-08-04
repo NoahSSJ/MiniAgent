@@ -69,11 +69,21 @@ class Session():
 
 
 class SessionManager:
-    save_dir: Path = Path(__file__).parent.parent / ".session"
+    # save_dir: Path = Path(__file__).parent.parent / ".session"
+    save_dir:Path = Path(r'D:\ai\MiniAgent\.session')
 
     def __init__(self) -> None:
         self.sessions: dict[str, Session] = {}
         self.save_dir.mkdir(parents=True, exist_ok=True)
+        self.get_saved_sessions()
+
+    def get_saved_sessions(self):
+        sessions = [f for f in self.save_dir.glob("*.json") if f.is_file()]
+        for session in sessions:
+            with open(session, mode="r", encoding='utf-8') as f:
+                data = json.load(f)
+            session = Session.from_dict(data=data)
+            self.sessions[session.session_id] = session
 
     def build(self) -> Session:
         session = Session()

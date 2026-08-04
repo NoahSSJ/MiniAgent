@@ -38,113 +38,6 @@ class BaseTool(ABC):
             }
         }
     
-class GetCurrentTime(BaseTool):
-    name = "get_current_time"
-    description = "get_current_time"
-    parameters = {
-        "type": "object",
-        "properties": {},
-        "required": []
-    }
-    is_risk = False
-
-    def validate_args(self):
-        pass
-
-    def execute(self):
-        return datetime.now().strftime("%Y%m%d-%H%M%S")
-    
-class ReadFileTool(BaseTool):
-    name = "read_file_tool"
-    description = "阅读文件的工具:阅读一个带着行号的文件的内容,在编辑文件之前总是先阅读文件."
-    parameters = {
-        "type": "object",
-        "properties": {
-            "file_path": {
-                "type": "string",
-                "description": "需要阅读的文件的路径"
-            },
-            "start_line": {
-                "type": "integer",
-                "description": "开始的行号,默认是从第1行开始"
-            },
-            "max_line": {
-                "type": "integer",
-                "description": "最多读取的行数（从start_line开始算起），默认2000行"
-            }
-        },
-        "required": ["file_path"]
-    }
-    is_risk = False
-
-    def validate_args(self, **kwargs):
-        logger.debug(f" >>> validate ReadFileTool args")
-        file_path = kwargs.get("file_path")
-        # 检查文件参数变量是否存在
-        if not file_path:
-            raise ValueError(f"Error: file_path not found")
-        # 检查是否存在路径越界问题
-        if self.context:
-            try:
-                abs_path = self.context.path(file_path)
-            except PermissionError as e:
-                raise ValueError(f"路径越界校验失败: {e}")
-        else:
-            abs_path = Path(file_path).resolve()
-            logger.debug(f"  >>> [validate_tool]   路径解析为: {abs_path}")
-
-        # 检查文件路径是否存在
-        if not abs_path.exists():
-            raise ValueError(f"参数校验失败: 文件 '{file_path}' 不存在!")
-        if not abs_path.is_file():
-            raise ValueError(f"参数校验失败: '{file_path}' 不是一个文件")
-        
-    
-    def execute(self, file_path: str, start_line: int = 1, max_line: int = 2000):
-        p = Path(file_path).expanduser().resolve()
-        text = p.read_text(encoding="utf-8", errors="replace")
-        lines = text.splitlines()
-        total = len(lines)
-        start = max(0, start_line - 1)
-        chunk = lines[start: (start + max_line)]
-        result = []
-        header = f"File: {file_path}\nTotal lines: {total}"
-        result.append(header)
-        for i, line in enumerate(chunk, start=start + 1):
-            result.append(f"{i} | {line}")
-        print("\n".join(result))
-        return "\n".join(result)
-        
-class DelegateTaskTool(BaseTool):
-    """委派调查工具: 把子任务交给只读子agent, 执行逻辑由handler回调注入"""
-    name = "delegate_task"
-    description = (
-        "当任务需要先做调查（如阅读多个文件、梳理代码结构、评估影响）时，"
-        "把该子任务委派给一个只读子agent去调查，返回纯文本调查结果。"
-        "在动手修改或下结论之前，信息不足优先调用本工具。"
-    )
-    parameters = {
-        "type": "object",
-        "properties": {
-            "task": {"type": "string", "description": "需要交给子agent调查的任务描述"}
-        },
-        "required": ["task"]
-    }
-    is_risk = False
-
-    def __init__(self, context=None, handler=None):
-        super().__init__(context)
-        self.handler = handler          # handler(task: str) -> str
-
-    def validate_args(self, **kwargs):
-        if not kwargs.get("task"):
-            raise ValueError("task 参数必填")
-
-    def execute(self, task: str, **kwargs):
-        if self.handler is None:
-            return "Error: delegate_task 未配置处理函数"
-        return self.handler(task)
-
 
 @dataclass(frozen=True)
 class ToolExecutionResult:
@@ -211,9 +104,9 @@ class ToolManager():
     """
     ToolManager:管理工具的注册/执行/校验
     """
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: Session, root: str) -> None:
         self.tool_context = ToolContext(
-            root=Path('.'),
+            root=Path(root),
             depth=0,
             max_depth=3,
         )
@@ -234,7 +127,8 @@ class ToolManager():
     def create_default_register(self):
         default_tools = [
             GetCurrentTime,
-            ReadFileTool
+            ReadFileTool,
+            ListFilesTool
         ]
         for tool_class in default_tools:
             if self.tool_context is not None:
@@ -351,8 +245,222 @@ class ToolManager():
         recent = prev_calls[-2:]
         return all(item["name"] == name and item["args"] == args for item in recent)
     
-                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class ListFilesTool(BaseTool):
+    """列出目录文件"""
+    name = "list_files"
+    description = "List files in the workspace."
+    parameters = {
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Directory path to list",
+                "default": "."
+            }
+        },
+        "required": []
+    }
+    is_risk = False
+    
+    def validate_args(self, **kwargs):
+        path = kwargs.get("path", ".")
+        if self.context:
+            p = self.context.path(path)
+            if not p.is_dir():
+                raise ValueError("path is not a directory")
+    
+    def execute(self, path: str = ".") -> str:
+        if self.context:
+            p = self.context.path(path)
+        else:
+            p = Path(path)
+        
+        if not p.is_dir():
+            raise ValueError(f"path is not a directory: {path}")
+        
+        # 忽略隐藏文件（可根据需要调整）
+        entries = [
+            item for item in sorted(p.iterdir(), key=lambda x: (x.is_file(), x.name.lower()))
+            if not item.name.startswith(".")
+        ]
+        
+        lines = []
+        for entry in entries[:200]:
+            kind = "[D]" if entry.is_dir() else "[F]"
+            if self.context:
+                rel_path = entry.relative_to(self.context.root)
+                lines.append(f"{kind} {rel_path}")
+            else:
+                lines.append(f"{kind} {entry.name}")
+        
+        return "\n".join(lines) or "(empty directory)"
 
 
 
         
+class ReadFileTool(BaseTool):
+    name = "read_file_tool"
+    description = "阅读文件的工具:阅读一个带着行号的文件的内容,在编辑文件之前总是先阅读文件."
+    parameters = {
+        "type": "object",
+        "properties": {
+            "file_path": {
+                "type": "string",
+                "description": "需要阅读的文件的路径"
+            },
+            "start_line": {
+                "type": "integer",
+                "description": "开始的行号,默认是从第1行开始"
+            },
+            "max_line": {
+                "type": "integer",
+                "description": "最多读取的行数（从start_line开始算起），默认2000行"
+            }
+        },
+        "required": ["file_path"]
+    }
+    is_risk = False
+
+    def validate_args(self, **kwargs):
+        logger.debug(f" >>> validate ReadFileTool args")
+        file_path = kwargs.get("file_path")
+        # 检查文件参数变量是否存在
+        if not file_path:
+            raise ValueError(f"Error: file_path not found")
+        # 检查是否存在路径越界问题
+        if self.context:
+            try:
+                abs_path = self.context.path(file_path)
+            except PermissionError as e:
+                raise ValueError(f"路径越界校验失败: {e}")
+        else:
+            abs_path = Path(file_path).resolve()
+            logger.debug(f"  >>> [validate_tool]   路径解析为: {abs_path}")
+
+        # 检查文件路径是否存在
+        if not abs_path.exists():
+            raise ValueError(f"参数校验失败: 文件 '{file_path}' 不存在!")
+        if not abs_path.is_file():
+            raise ValueError(f"参数校验失败: '{file_path}' 不是一个文件")
+        
+    
+    def execute(self, file_path: str, start_line: int = 1, max_line: int = 2000):
+        p = Path(file_path).expanduser().resolve()
+        text = p.read_text(encoding="utf-8", errors="replace")
+        lines = text.splitlines()
+        total = len(lines)
+        start = max(0, start_line - 1)
+        chunk = lines[start: (start + max_line)]
+        result = []
+        header = f"File: {file_path}\nTotal lines: {total}"
+        result.append(header)
+        for i, line in enumerate(chunk, start=start + 1):
+            result.append(f"{i} | {line}")
+        print("\n".join(result))
+        return "\n".join(result)
+    
+class DelegateTaskTool(BaseTool):
+    """委派调查工具: 把子任务交给只读子agent, 执行逻辑由handler回调注入"""
+    name = "delegate_task"
+    description = (
+        "当任务需要先做调查（如阅读多个文件、梳理代码结构、评估影响）时，"
+        "把该子任务委派给一个只读子agent去调查，返回纯文本调查结果。"
+        "在动手修改或下结论之前，信息不足优先调用本工具。"
+    )
+    parameters = {
+        "type": "object",
+        "properties": {
+            "task": {"type": "string", "description": "需要交给子agent调查的任务描述"}
+        },
+        "required": ["task"]
+    }
+    is_risk = False
+
+    def __init__(self, context=None, handler=None):
+        super().__init__(context)
+        self.handler = handler          # handler(task: str) -> str
+
+    def validate_args(self, **kwargs):
+        if not kwargs.get("task"):
+            raise ValueError("task 参数必填")
+
+    def execute(self, task: str, **kwargs):
+        if self.handler is None:
+            return "Error: delegate_task 未配置处理函数"
+        return self.handler(task)
+    
+class GetCurrentTime(BaseTool):
+    name = "get_current_time"
+    description = "get_current_time"
+    parameters = {
+        "type": "object",
+        "properties": {},
+        "required": []
+    }
+    is_risk = False
+
+    def validate_args(self):
+        pass
+
+    def execute(self):
+        return datetime.now().strftime("%Y%m%d-%H%M%S")

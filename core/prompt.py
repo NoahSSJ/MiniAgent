@@ -15,9 +15,10 @@ class PromptPrefix():
     built_at: str
 
 class PromptManager():
-    def __init__(self, model: str, tools: list) -> None:
+    def __init__(self, model: str, tools: list, root: str) -> None:
         self.model = model
         self.tools = tools
+        self.root = root
 
     def get_tool_signature(self, tools):
         tools_schema = [t.to_schema() for t in tools]
@@ -26,7 +27,7 @@ class PromptManager():
         ).hexdigest()
     
     def get_system_prompt(self) -> "PromptPrefix":
-        cwd_path = os.getcwd().split('\\')[-1]
+        # cwd_path = os.getcwd().split('\\')[-1]
         tool_list = "\n".join(f"- **{t.name}**: {t.description}" for t in self.tools)
         uname = platform.uname()
         signature = self.get_tool_signature(self.tools)
@@ -36,7 +37,7 @@ class PromptManager():
             你帮助解决软件工程相关的问题：编写代码、修复 bug、重构、解释代码、运行命令等。
 
             # 环境信息
-            - 工作目录：{cwd_path}
+            - 工作目录：{self.root}
             - 操作系统：{uname.system} {uname.release} ({uname.machine})
             - Python 版本：{platform.python_version()}
 
