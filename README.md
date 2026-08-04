@@ -1,5 +1,9 @@
 # MiniAgent
 
+[![Python](https://img.shields.io/badge/python-3.14-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-pytest-blue)](https://docs.pytest.org/)
+
 从零开发的轻量级多模型路由 Agent。
 
 ## 项目简介
