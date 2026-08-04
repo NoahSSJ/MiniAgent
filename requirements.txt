@@ -1,0 +1,12 @@
+# MiniAgent — Python 运行依赖
+# 使用 Conda 环境 mini-agent-0 (Python 3.14)
+# pip install -r requirements.txt
+
+openai==2.53.0
+httpx==0.28.1
+loguru==0.7.3
+fastapi==0.141.1
+uvicorn==0.52.1
+pydantic==2.13.4
+python-dotenv==1.2.2
+pytest==9.1.1

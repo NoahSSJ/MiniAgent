@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mini-agent"
 version = "0.1.0"
-description = "MiniAgent V2 — 轻量级多模型路由 Agent，基于 Ollama 本地模型 + DeepSeek 云端模型"
+description = "MiniAgent — 轻量级多模型路由 Agent，基于 Ollama 本地模型 + DeepSeek 云端模型"
 readme = "README.md"
 requires-python = ">=3.14"
 license = { text = "MIT" }
@@ -19,18 +19,18 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "openai>=1.0",
-    "httpx>=0.27",
+    "openai>=2.53",
+    "httpx>=0.28",
     "loguru>=0.7",
-    "fastapi>=0.115",
-    "uvicorn>=0.30",
-    "pydantic>=2.0",
-    "python-dotenv>=1.0",
+    "fastapi>=0.141",
+    "uvicorn>=0.52",
+    "pydantic>=2.13",
+    "python-dotenv>=1.2",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
+    "pytest>=9.1",
 ]
 
 [tool.setuptools]
